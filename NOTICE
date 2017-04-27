@@ -1,0 +1,15 @@
+The etcdstat package uses the following open source projects:
+
+* jinja2 - Jinja2 python template engine. 
+  Copyright (c) 2009 by the Jinja Team, see AUTHORS for more details.
+  https://github.com/pallets/jinja
+* psutil - A cross-platform process and system utilities module for Python.
+  Copyright (c) 2009, Jay Loden, Dave Daeschler, Giampaolo Rodola
+  https://github.com/giampaolo/psutil
+* cachetools - Extensible memoizing collections and decorators
+  Copyright (c) 2014-2016 Thomas Kemmer
+  https://github.com/tkem/cachetools
+
+Other sources used in developing the package:
+
+* https://gehrcke.de/2014/02/distributing-a-python-command-line-application/
