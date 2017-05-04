@@ -18,26 +18,18 @@
  
 import re
 from setuptools import setup
+import versioneer
 
- 
-version = re.search(
-    '^__version__\s*=\s*"(.*)"',
-    open('etcdstat/__init__.py').read(),
-    re.M
-    ).group(1)
- 
- 
 with open("README.rst", "rb") as f:
     long_descr = f.read().decode("utf-8")
- 
- 
+  
 setup(
     name = "tw-etcdstat",
     packages = ["etcdstat"],
     entry_points = {
         "console_scripts": ['etcdstat = etcdstat.etcdstat:main']
     },
-    version = version,
+    version=versioneer.get_version(),
     description = "Python system and service monitoring service",
     long_description = long_descr,
     author = "Alexander Lukichev",
