@@ -17,12 +17,24 @@ import module
 
 class Memory(module.BaseModule):
 
+    """
+    * {{memory_usage_pct}} - physical memory usage (percent)
+    * {{total_memory}} - total phycal memory
+    * {{available_memory}} - available memory
+    """
+
     def keys(self):
-        return ["memory_usage_pct"]
+        return ["memory_usage_pct", "total_memory", "available_memory"]
 
     def get(self, key):
         if key == "memory_usage_pct":
             mem = psutil.virtual_memory()
             return 1 - float(mem.available) / mem.total
+        elif key == "total_memory":
+            mem = psutil.virtual_memory()
+            return float(mem.total)
+        elif key == "available_memory":
+            mem = psutil.virtual_memory()
+            return float(mem.available)
         else:
             raise KeyError()

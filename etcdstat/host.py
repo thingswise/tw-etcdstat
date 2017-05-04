@@ -19,6 +19,12 @@ import socket
 
 class Host(module.BaseModule):
 
+    """
+    * {{addr(family)}} - get address for the given address family 
+      (one of ip, ip6, link)
+    * {{ip}} - get IPv4 address 
+    """
+
     def __init__(self, ttl=300):        
         self.interfaces = None
         self.ttl = ttl

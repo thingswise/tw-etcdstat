@@ -1,0 +1,21 @@
+^(tw) snapshot:
+    instances:
+        ^({ip}) {ip}:
+            cpu: ^(cpu)
+            memory:
+                total: ^(total_memory)
+                used: ^(used_memory)
+            ^(disks) disks:
+                ^({disk}) {disk}:
+                    usage: ^(.)
+            ^(units) units:
+                ^({unit}) {unit}:
+                    state: ^(state)
+                    active_since: ^(active-since)
+                    cpu: ^(cpu)
+                    memory: ^(rss)
+            requires: ^(requires)
+            tag: ^(tag)
+            uptime: ^(uptime)
+            os: ^(os)
+

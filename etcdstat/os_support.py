@@ -12,26 +12,28 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-import psutil
+import dbus
 import module
+import logging
 
-class Disk(module.BaseModule):
+class OS(module.BaseModule):
+
+    """
+    * {{os_name}} - get the pretty printed OS name
+    """
+
+    HOSTNAME = "org.freedesktop.hostname1"
+
+    def __init__(self):
+        self.bus = dbus.SystemBus()
+        hostname1 = self.bus.get_object(OS.HOSTNAME, "/org/freedesktop/hostname1")
+        self.hostname_props = dbus.Interface(hostname1, dbus_interface="org.freedesktop.DBus.Properties")        
 
     def keys(self):
-        return ["disk_usage_pct", "available_storage", "total_storage"]
+        return ["os_name"]
 
     def get(self, key):
-        if key == "disk_usage_pct":
-            def disk_usage(path):
-                return float(psutil.disk_usage(path).percent)/100
-            return disk_usage
-        elif key == "available_storage":
-            def available_storage(path):
-                return psutil.disk_usage(path).free
-            return available_storage    
-        elif key == "total_storage":
-            def total_storage(path):
-                return psutil.disk_usage(path).total
-            return total_storage    
+        if key == "os_name":
+            return self.hostname_props.Get("org.freedesktop.hostname1", "OperatingSystemPrettyName")
         else:
-            raise KeyError()
+            raise KeyError(key)

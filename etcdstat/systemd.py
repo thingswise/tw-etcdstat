@@ -33,6 +33,11 @@ def _get_process(pid):
 
 class CGroupWrapper(object):
 
+    """
+    * {{...cpu_time_pct}} - percent share of CPU core time by the given cgroup
+    * {{...rss}} - total RSS memory in bytes by the given cgroup 
+    """
+
     def __init__(self, cgname):
         self.cgname = cgname
 
@@ -55,7 +60,7 @@ class CGroupWrapper(object):
             # new, then cpu_percent() returns 0. The memoization
             # occurs in _get_process() and is mostly controlled 
             # by the LRUCache settings. If the number of monitored
-            # processes approaches 5000 (see decotator), then
+            # processes approaches 5000 (see decorator), then
             # the returned value becomes incorrect
             cpu_percent += _get_process(pid).cpu_percent()
         return cpu_percent
@@ -69,6 +74,13 @@ class CGroupWrapper(object):
         return memory
 
 class UnitWrapper(object):
+
+    """
+    * {{...properties}} - return the object which contains unit properties 
+      (see https://wiki.freedesktop.org/www/Software/systemd/dbus/)
+    * {{...cgroup}} - return the CGroup properties representation (see CGroupWrapper)
+    * {{...handle(action)}} - execute unit action (one of start, stop, restart)
+    """
 
     def __init__(self, obj):
         self.unit = dbus.Interface(obj, dbus_interface="org.freedesktop.systemd1.Unit")
@@ -85,28 +97,51 @@ class UnitWrapper(object):
             return self.props
         elif name == "cgroup":
             return self.cgroup
+        elif name == "handle":
+            def handle(action):
+                if action == "start":
+                    self.unit.Start("replace")
+                elif action == "stop":
+                    self.unit.Stop("replace")
+                elif action == "restart":
+                    self.unit.Restart("replace")
+                else:
+                    raise ValueError(action)                    
+            return handle
         else:        
             return getattr(self.unit, name)
 
 
 class Systemd(module.BaseModule):
 
+    """
+    * {{unit(name)}} - get the systemd unit object (see UnitWrapper)
+    """    
+
     SYSTEMD = "org.freedesktop.systemd1"
 
     def __init__(self):
         self.bus = dbus.SystemBus()
         systemd1 = self.bus.get_object(Systemd.SYSTEMD, "/org/freedesktop/systemd1")
-        self.manager = dbus.Interface(systemd1, dbus_interface="org.freedesktop.systemd1.Manager")        
+        self.manager = dbus.Interface(systemd1, dbus_interface="org.freedesktop.systemd1.Manager")
+        self.manager_props =  PropWrapper("org.freedesktop.systemd1.Manager", 
+            dbus.Interface(systemd1, dbus_interface="org.freedesktop.DBus.Properties"))
 
     def keys(self):
-        return ["unit"]
+        return ["unit" ,"reboot", "boot_time"]
 
     def get(self, key):
-        def unit(name):
-            unit_path = self.manager.GetUnit(name)
-            unit_obj = self.bus.get_object(Systemd.SYSTEMD, unit_path)
-            return UnitWrapper(unit_obj)
         if key == "unit":
+            def unit(name):
+                unit_path = self.manager.GetUnit(name)
+                unit_obj = self.bus.get_object(Systemd.SYSTEMD, unit_path)
+                return UnitWrapper(unit_obj)
             return unit
+        elif key == "reboot":
+            def reboot():
+                self.manager.Reboot()
+            return reboot
+        elif key == "boot_time":
+            return self.manager_props.KernelTimestamp/1000000.0
         else:
             raise KeyError(key)

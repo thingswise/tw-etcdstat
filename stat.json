@@ -1,0 +1,23 @@
+{
+    "tw": {
+        "10.0.0.1": {
+            "cpu" : 1,
+            "total_memory": 200,
+            "used_memory": 100,
+            "disks": {
+                "_": 15
+            },
+            "units": {
+                "nginx": {
+                    "state": "active",
+                    "cpu": 0.3,
+                    "rss": 300
+                }
+            },
+            "requires": [
+                "apache",
+                "nginx"
+            ]
+        }    
+    }
+}
