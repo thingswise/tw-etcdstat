@@ -24,6 +24,7 @@ with open("README.rst", "rb") as f:
     long_descr = f.read().decode("utf-8")
   
 setup(
+    cmdclass=versioneer.get_cmdclass(),
     name = "tw-etcdstat",
     packages = ["etcdstat"],
     entry_points = {
