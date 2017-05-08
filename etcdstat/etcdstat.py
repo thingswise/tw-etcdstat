@@ -39,7 +39,6 @@ class EtcdClient(Client):
     def __init__(self, host, port):
         import etcd
         self.client = etcd.Client(host=host, port=port)
-        self.context = context
 
     def write(self, name, value, ttl=None):
         self.client.write(name, value, ttl=self.interval*2)
