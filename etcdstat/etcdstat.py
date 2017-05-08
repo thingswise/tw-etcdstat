@@ -36,13 +36,12 @@ class StdoutClient(Client):
 
 class EtcdClient(Client):
 
-    def __init__(self, host, port, interval):
+    def __init__(self, host, port):
         import etcd
         self.client = etcd.Client(host=host, port=port)
-        self.interval = interval
 
     def write(self, name, value, ttl=None):
-        self.client.write(name, value, ttl=self.interval*2)
+        self.client.write(name, value, ttl=ttl)
 
     def close(self):
         pass
@@ -62,8 +61,8 @@ class EtcdHandlerThread(threading.Thread):
         self.context = context
 
     def run(self):
-        key = self.ntemp.render(context)
-        defaults = self.defaults.render(context)
+        key = self.ntemp.render(self.context)
+        defaults = self.defaults.render(self.context)
         for event in self.client.eternal_watch(key=key,recursive=True):
             if event.action == "create":
                 ctx = dict(self.context)
@@ -115,7 +114,7 @@ class EtcdStat(object):
         if parsed_url.scheme == "stdout":
             self.client = StdoutClient()
         elif parsed_url.scheme == "http":
-            self.client = EtcdClient(host=parsed_url.hostname, port=parsed_url.port if parsed_url.port else 80, interval=interval)
+            self.client = EtcdClient(host=parsed_url.hostname, port=parsed_url.port if parsed_url.port else 80)
         else:
             raise ValueError("Unsupported scheme" % parsed_url.scheme)
 
@@ -143,7 +142,7 @@ class EtcdStat(object):
         import jinja2
 
         defaults = self.defaults.render(self.context)
-        print "defaults =", defaults 
+        #print "defaults =", defaults 
         ctx = dict(self.context)
         ctx.update(defaults)
 
@@ -160,7 +159,7 @@ class EtcdStat(object):
                 logging.error("Error rendering %s" % value, exc_info=True)
                 raise
             try:
-                self.client.write(_name, _value, ttl=self.interval*2)
+                self.client.write(_name, _value, ttl=int(self.interval*2))
             except:
                 logging.error("Error writing %s" % _name, exc_info=True)
                 raise
@@ -206,7 +205,7 @@ def main():
     for sect in ["Defaults"]:
         for name, value in config.items(sect):
             defaults.append((name, value))
-    print defaults
+    #print defaults
 
     items = []
     for sect in ["System","Services"]:
