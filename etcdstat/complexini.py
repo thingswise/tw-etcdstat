@@ -17,10 +17,11 @@ class ComplexIniFile(object):
             for name, value in self.root.items("Includes"):
                 if name != "include":
                     raise ValueError("Invalid entry in `Includes` section: %s: %s" % (name, value))
-                path = os.path.join(self.root_dir, value) if self.root_dir else value
-                sub_parser = ComplexIniFile(root_dir=self.root_dir)
-                sub_parser.read(path)
-                self.parsers.append(sub_parser)
+                for file in value.split(","):
+                    path = os.path.join(self.root_dir, file) if self.root_dir else file
+                    sub_parser = ComplexIniFile(root_dir=self.root_dir)
+                    sub_parser.read(path)
+                    self.parsers.append(sub_parser)
         except ConfigParser.NoSectionError:
             pass
 
