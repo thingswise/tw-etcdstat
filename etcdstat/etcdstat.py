@@ -36,9 +36,10 @@ class StdoutClient(Client):
 
 class EtcdClient(Client):
 
-    def __init__(self, host, port):
+    def __init__(self, host, port, interval):
         import etcd
         self.client = etcd.Client(host=host, port=port)
+        self.interval = interval
 
     def write(self, name, value, ttl=None):
         self.client.write(name, value, ttl=self.interval*2)
@@ -114,7 +115,7 @@ class EtcdStat(object):
         if parsed_url.scheme == "stdout":
             self.client = StdoutClient()
         elif parsed_url.scheme == "http":
-            self.client = EtcdClient(host=parsed_url.hostname, port=parsed_url.port if parsed_url.port else 80)
+            self.client = EtcdClient(host=parsed_url.hostname, port=parsed_url.port if parsed_url.port else 80, interval=interval)
         else:
             raise ValueError("Unsupported scheme" % parsed_url.scheme)
 
