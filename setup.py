@@ -26,7 +26,7 @@ with open("README.rst", "rb") as f:
 setup(
     cmdclass=versioneer.get_cmdclass(),
     name = "tw-etcdstat",
-    packages = ["etcdstat"],
+    packages = ["etcdstat", "etcdstat.etcdparser"],
     entry_points = {
         "console_scripts": ['etcdstat = etcdstat.etcdstat:main']
     },
