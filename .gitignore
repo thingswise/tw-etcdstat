@@ -1,3 +1,4 @@
 *.pyc
 dist/
 tw_etcdstat.egg-info/
+build/
