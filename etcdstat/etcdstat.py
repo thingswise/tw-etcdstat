@@ -115,7 +115,7 @@ class EtcdStat(object):
         if parsed_url.scheme == "stdout":
             self.client = StdoutClient()
         elif parsed_url.scheme == "http":
-            self.client = EtcdClient(host=parsed_url.hostname(), port=parsed_url.port if parsed_url.port else 80)
+            self.client = EtcdClient(host=parsed_url.hostname, port=parsed_url.port if parsed_url.port else 80)
         else:
             raise ValueError("Unsupported scheme" % parsed_url.scheme)
 
