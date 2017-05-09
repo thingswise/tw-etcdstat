@@ -68,7 +68,10 @@ class EtcdHandlerThread(threading.Thread):
                 ctx = dict(self.context)
                 ctx.update(defaults)
                 ctx["event"] = event.value
-                self.vtemp.render(ctx)
+                try:
+                    self.vtemp.render(ctx)
+                except:
+                    logging.error("Error processing action on %s" % key, exc_info=True)
 
 
 class Context(UserDict.DictMixin):
@@ -152,17 +155,17 @@ class EtcdStat(object):
                 _name = name.render(ctx)
             except:
                 logging.error("Error rendering %s" % name, exc_info=True)
-                raise
+                continue
             try:
                 _value = value.render(ctx)
             except:
                 logging.error("Error rendering %s" % value, exc_info=True)
-                raise
+                continue
             try:
                 self.client.write(_name, _value, ttl=int(self.interval*2))
             except:
                 logging.error("Error writing %s" % _name, exc_info=True)
-                raise
+                continue
 
     def run(self):
         import time        
