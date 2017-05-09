@@ -63,7 +63,7 @@ class CGroupWrapper(object):
             # processes approaches 5000 (see decorator), then
             # the returned value becomes incorrect
             cpu_percent += _get_process(pid).cpu_percent()
-        return cpu_percent
+        return float(cpu_percent) / 100
 
     @property
     def rss(self):
