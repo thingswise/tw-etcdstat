@@ -23,6 +23,9 @@ class Client(object):
     def write(self, name, value, ttl=None):
         assert False
 
+    def append(self, name, value, ttl=None):
+        assert False
+
     def close(self):
         pass
 
@@ -42,6 +45,9 @@ class EtcdClient(Client):
 
     def write(self, name, value, ttl=None):
         self.client.write(name, value, ttl=ttl)
+
+    def append(self, name, value, ttl=None):
+        self.client.write(name, value, append=True, ttl=ttl)
 
     def close(self):
         pass
