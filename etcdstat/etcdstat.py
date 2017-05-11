@@ -67,8 +67,10 @@ class EtcdHandlerThread(threading.Thread):
         self.context = context
 
     def run(self):
-        key = self.ntemp.render(self.context)
         defaults = self.defaults.render(self.context)
+        ctx = dict(self.context)
+        ctx.update(defaults)
+        key = self.ntemp.render(ctx)
         for event in self.client.eternal_watch(key=key,recursive=True):
             if event.action == "create":
                 ctx = dict(self.context)
