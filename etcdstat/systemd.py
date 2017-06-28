@@ -121,10 +121,18 @@ class Systemd(module.BaseModule):
     SYSTEMD = "org.freedesktop.systemd1"
 
     def __init__(self):
-        self.bus = dbus.SystemBus()
-        systemd1 = self.bus.get_object(Systemd.SYSTEMD, "/org/freedesktop/systemd1")
-        self.manager = dbus.Interface(systemd1, dbus_interface="org.freedesktop.systemd1.Manager")
-        self.manager_props =  PropWrapper("org.freedesktop.systemd1.Manager", 
+        pass  
+
+    def bus(self):
+        return dbus.SystemBus()
+
+    def manager(self):        
+        systemd1 = self.bus().get_object(Systemd.SYSTEMD, "/org/freedesktop/systemd1")
+        return dbus.Interface(systemd1, dbus_interface="org.freedesktop.systemd1.Manager")
+
+    def manager_props(self):
+        systemd1 = self.bus().get_object(Systemd.SYSTEMD, "/org/freedesktop/systemd1")
+        return PropWrapper("org.freedesktop.systemd1.Manager", 
             dbus.Interface(systemd1, dbus_interface="org.freedesktop.DBus.Properties"))
 
     def keys(self):
@@ -133,15 +141,15 @@ class Systemd(module.BaseModule):
     def get(self, key):
         if key == "unit":
             def unit(name):
-                unit_path = self.manager.GetUnit(name)
-                unit_obj = self.bus.get_object(Systemd.SYSTEMD, unit_path)
+                unit_path = self.manager().GetUnit(name)
+                unit_obj = self.bus().get_object(Systemd.SYSTEMD, unit_path)
                 return UnitWrapper(unit_obj)
             return unit
         elif key == "reboot":
             def reboot():
-                self.manager.Reboot()
+                self.manager().Reboot()
             return reboot
         elif key == "boot_time":
-            return self.manager_props.KernelTimestamp/1000000.0
+            return self.manager_props().KernelTimestamp/1000000.0
         else:
             raise KeyError(key)

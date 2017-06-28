@@ -25,15 +25,22 @@ class OS(module.BaseModule):
     HOSTNAME = "org.freedesktop.hostname1"
 
     def __init__(self):
-        self.bus = dbus.SystemBus()
-        hostname1 = self.bus.get_object(OS.HOSTNAME, "/org/freedesktop/hostname1")
-        self.hostname_props = dbus.Interface(hostname1, dbus_interface="org.freedesktop.DBus.Properties")        
+        pass
+
+    def hostname_props(self):
+        bus = dbus.SystemBus()
+        hostname1 = bus.get_object(OS.HOSTNAME, "/org/freedesktop/hostname1")
+        return dbus.Interface(hostname1, dbus_interface="org.freedesktop.DBus.Properties")
 
     def keys(self):
         return ["os_name"]
 
     def get(self, key):
         if key == "os_name":
-            return self.hostname_props.Get("org.freedesktop.hostname1", "OperatingSystemPrettyName")
+            try:
+                return hostname_props().Get("org.freedesktop.hostname1", "OperatingSystemPrettyName")
+            except dbus.DBusException:
+                logging.error("Error getting OS name", exc_info=True)
+                return ""
         else:
             raise KeyError(key)
