@@ -38,7 +38,7 @@ class OS(module.BaseModule):
     def get(self, key):
         if key == "os_name":
             try:
-                return hostname_props().Get("org.freedesktop.hostname1", "OperatingSystemPrettyName")
+                return self.hostname_props().Get("org.freedesktop.hostname1", "OperatingSystemPrettyName")
             except dbus.DBusException:
                 logging.error("Error getting OS name", exc_info=True)
                 return ""
