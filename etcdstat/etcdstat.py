@@ -200,6 +200,9 @@ def main():
     import argparse
     import complexini
     import os.path
+    # make dbus thread-safe
+    import dbus.mainloop.glib
+    dbus.mainloop.glib.threads_init()
 
     parser = argparse.ArgumentParser()
     parser.add_argument("url", metavar="URL", help="Etcd URL", default="http://localhost:2379")
