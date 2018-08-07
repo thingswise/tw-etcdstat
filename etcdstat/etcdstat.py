@@ -226,6 +226,7 @@ def main():
     dbus.mainloop.glib.threads_init()
 
     parser = argparse.ArgumentParser()
+    parser.add_argument("url", metavar="URL", help="Etcd URL", default="http://localhost:2379")
     parser.add_argument("-c", "--config", metavar="CONFIG", help="Configuration file", default="/etc/etcdstat.cfg")
     parser.add_argument("-i", "--interval", metavar="INTERVAL", help="Poll interval (sec)", type=float, default="10")
 
@@ -251,7 +252,7 @@ def main():
         for name, value in config.items(sect):
             handlers.append((name, value))
 
-    endpoints = os.environ.get("ETCDCTL_ENDPOINT", "http://localhost:2379")
+    endpoints = os.environ.get("ETCDCTL_ENDPOINT", args.url)
     cert_file = os.environ.get("ETCDCTL_CERT_FILE")
     key_file = os.environ.get("ETCDCTL_KEY_FILE")
     ca_cert = os.environ.get("ETCDCTL_CACERT")
