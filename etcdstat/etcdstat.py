@@ -56,7 +56,7 @@ class EtcdClient(Client):
                           validation.
        """
         import etcd
-        self.client = etcd.Client(host=host, protocol=protocol, cert=cert, ca_cert=ca_cert)
+        self.client = etcd.Client(host=host, protocol=protocol, cert=cert, ca_cert=ca_cert, allow_reconnect=True)
 
     def write(self, name, value, ttl=None):
         self.client.write(name, value, ttl=ttl)
@@ -147,7 +147,7 @@ class EtcdStat(object):
             self.client = StdoutClient()
         else:
             self.client = EtcdClient(
-                map(lambda e: (e.hostname, e.port if e.port else 80 if e.scheme == "http" else 443), parsed_endpoints),
+                tuple(map(lambda e: (e.hostname, e.port if e.port else 80 if e.scheme == "http" else 443), parsed_endpoints)),
                 scheme, cert, ca_cert)
 
         self.defaults = TemplateDict({ n : Template(v, env.from_string(v)) for (n,v) in defaults })
@@ -226,7 +226,7 @@ def main():
     dbus.mainloop.glib.threads_init()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("url", metavar="URL", help="Etcd URL", default="http://localhost:2379")
+    parser.add_argument("url", metavar="URL", help="Etcd URL", default="http://localhost:2379", nargs='?')
     parser.add_argument("-c", "--config", metavar="CONFIG", help="Configuration file", default="/etc/etcdstat.cfg")
     parser.add_argument("-i", "--interval", metavar="INTERVAL", help="Poll interval (sec)", type=float, default="10")
 
