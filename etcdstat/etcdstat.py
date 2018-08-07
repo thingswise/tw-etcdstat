@@ -39,9 +39,24 @@ class StdoutClient(Client):
 
 class EtcdClient(Client):
 
-    def __init__(self, host, port):
+    def __init__(self, host, protocol, cert, ca_cert):
+        """
+       Initialize the client.
+
+       Args:
+           host (mixed):
+                          a tuple ((host, port), (host, port), ...)
+
+           protocol (str):  Protocol used to connect to etcd.
+
+           cert (mixed):   If a string, the whole ssl client certificate;
+                           if a tuple, the cert and key file names.
+
+           ca_cert (str): The ca certificate. If pressent it will enable
+                          validation.
+       """
         import etcd
-        self.client = etcd.Client(host=host, port=port)
+        self.client = etcd.Client(host=host, protocol=protocol, cert=cert, ca_cert=ca_cert)
 
     def write(self, name, value, ttl=None):
         self.client.write(name, value, ttl=ttl)
@@ -109,11 +124,11 @@ class Template(object):
         return self.repr 
 
     def render(self, context):
-        return self.template.render(context)            
+        return self.template.render(context)
 
 class EtcdStat(object):
 
-    def __init__(self, url, interval, items, handlers, defaults):
+    def __init__(self, endpoints, cert, ca_cert, interval, items, handlers, defaults):
         from urlparse import urlparse
         from jinja2 import Environment
         env = Environment()
@@ -121,13 +136,19 @@ class EtcdStat(object):
         self.handlers = { n : (Template(n, env.from_string(n)), Template(v, env.from_string(v))) for (n,v) in handlers }
         self.interval = interval
 
-        parsed_url = urlparse(url)
-        if parsed_url.scheme == "stdout":
+        parsed_endpoints = map(urlparse, endpoints.split(','))
+
+        if len(parsed_endpoints) <= 0:
+            raise ValueError("Endpoint parameter is empty or missing")
+
+        scheme = parsed_endpoints[0].scheme
+
+        if scheme == "stdout":
             self.client = StdoutClient()
-        elif parsed_url.scheme == "http":
-            self.client = EtcdClient(host=parsed_url.hostname, port=parsed_url.port if parsed_url.port else 80)
         else:
-            raise ValueError("Unsupported scheme" % parsed_url.scheme)
+            self.client = EtcdClient(
+                map(lambda e: (e.hostname, e.port if e.port else 80 if e.scheme == "http" else 443), parsed_endpoints),
+                scheme, cert, ca_cert)
 
         self.defaults = TemplateDict({ n : Template(v, env.from_string(v)) for (n,v) in defaults })
 
@@ -205,7 +226,6 @@ def main():
     dbus.mainloop.glib.threads_init()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("url", metavar="URL", help="Etcd URL", default="http://localhost:2379")
     parser.add_argument("-c", "--config", metavar="CONFIG", help="Configuration file", default="/etc/etcdstat.cfg")
     parser.add_argument("-i", "--interval", metavar="INTERVAL", help="Poll interval (sec)", type=float, default="10")
 
@@ -230,13 +250,23 @@ def main():
     for sect in ["Handlers"]:
         for name, value in config.items(sect):
             handlers.append((name, value))
-    
-    with create_etcdstat(args.url, args.interval, items, handlers, defaults) as etcdstat:
+
+    endpoints = os.environ.get("ETCDCTL_ENDPOINT", "http://localhost:2379")
+    cert_file = os.environ.get("ETCDCTL_CERT_FILE")
+    key_file = os.environ.get("ETCDCTL_KEY_FILE")
+    ca_cert = os.environ.get("ETCDCTL_CACERT")
+
+    if cert_file and key_file:
+        cert = (cert_file, key_file)
+    else:
+        cert = None
+
+    with create_etcdstat(endpoints, cert, ca_cert, args.interval, items, handlers, defaults) as etcdstat:
         etcdstat.run()
 
 @contextlib.contextmanager
-def create_etcdstat(url, interval, items, handlers, defaults):
-    etcdstat = EtcdStat(url, interval, items, handlers, defaults)
+def create_etcdstat(endpoints, cert, ca_cert, interval, items, handlers, defaults):
+    etcdstat = EtcdStat(endpoints, cert, ca_cert, interval, items, handlers, defaults)
     try:
         yield etcdstat
     finally:
