@@ -55,7 +55,7 @@ class ObjectValueTemplate(ValueTemplate):
                     if name in result:
                         del result[name]
                 else:
-                    result[name] = v.render(subctx)
+                    result[name] = val
         return result
 
     def put(self, n, v):
