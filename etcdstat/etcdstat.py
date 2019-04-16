@@ -225,6 +225,8 @@ def main():
     import dbus.mainloop.glib
     dbus.mainloop.glib.threads_init()
 
+    logging.basicConfig(level=logging.DEBUG)
+
     parser = argparse.ArgumentParser()
     parser.add_argument("url", metavar="URL", help="Etcd URL", default="http://localhost:2379", nargs='?')
     parser.add_argument("-c", "--config", metavar="CONFIG", help="Configuration file", default="/etc/etcdstat.cfg")
@@ -256,6 +258,8 @@ def main():
     cert_file = os.environ.get("ETCDCTL_CERT_FILE")
     key_file = os.environ.get("ETCDCTL_KEY_FILE")
     ca_cert = os.environ.get("ETCDCTL_CACERT")
+
+    logging.debug(os.environ)
 
     if cert_file and key_file:
         cert = (cert_file, key_file)
