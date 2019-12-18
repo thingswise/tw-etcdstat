@@ -39,7 +39,7 @@ setup(
     install_requires = [
         "jinja2",
         "psutil",
-        "cachetools",
+        "cachetools<4.0",
         "python-etcd"
     ],
     license="Apache2"
