@@ -62,7 +62,11 @@ class CGroupWrapper(object):
             # by the LRUCache settings. If the number of monitored
             # processes approaches 5000 (see decorator), then
             # the returned value becomes incorrect
-            cpu_percent += _get_process(pid).cpu_percent()
+            try:
+                cpu_percent += _get_process(pid).cpu_percent()
+            except Exception as e:
+                logging.info("couldn't get cpu percent for process %d: %s", pid, e)
+                continue
         return float(cpu_percent) / 100
 
     @property
@@ -70,7 +74,11 @@ class CGroupWrapper(object):
         procs = self._get_procs()
         memory = 0.0
         for pid in procs:
-            memory += _get_process(pid).memory_info().rss
+            try:
+                memory += _get_process(pid).memory_info().rss
+            except Exception as e:
+                logging.info("couldn't get memory info for process %d: %s", pid, e)
+                continue
         return memory
 
 class UnitWrapper(object):

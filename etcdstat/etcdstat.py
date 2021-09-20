@@ -279,4 +279,4 @@ def create_etcdstat(endpoints, cert, ca_cert, interval, items, handlers, default
         etcdstat.close()
 
 if __name__ == "__main__":
-    main()        
+    main()
