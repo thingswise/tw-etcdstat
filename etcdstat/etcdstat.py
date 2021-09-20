@@ -225,14 +225,15 @@ def main():
     import dbus.mainloop.glib
     dbus.mainloop.glib.threads_init()
 
-    logging.basicConfig(level=logging.DEBUG)
-
     parser = argparse.ArgumentParser()
     parser.add_argument("url", metavar="URL", help="Etcd URL", default="http://localhost:2379", nargs='?')
     parser.add_argument("-c", "--config", metavar="CONFIG", help="Configuration file", default="/etc/etcdstat.cfg")
     parser.add_argument("-i", "--interval", metavar="INTERVAL", help="Poll interval (sec)", type=float, default="10")
+    parser.add_argument("-l", "--loglevel", metavar="LOGLEVEL", help="Log level", default="ERROR")
 
     args = parser.parse_args()
+    
+    logging.basicConfig(level=args.loglevel)
     
     config_dir = os.path.dirname(args.config)
     config = complexini.ComplexIniFile(root_dir=config_dir if config_dir else None)
